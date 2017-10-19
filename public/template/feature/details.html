@@ -1,0 +1,135 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Feature : {{feature.name}}
+                    <small>Details</small>
+                </h2>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="x_content">
+                <div class="col-md-9 col-sm-9 col-xs-12">
+                    <ul class="stats-overview">
+                        <li>
+                            <span class="name"> Total Testcases</span>
+                            <span class="value text-success"> {{testcases.length}} </span>
+                        </li>
+                        <li class="hidden-phone">
+                            <span class="name"> Total Testvectors </span>
+                            <span class="value text-success"> {{testvectors.length}} </span>
+                        </li>
+                    </ul>
+                    <br>
+                    <div id="chart" style="width: 100% ;height:400px;"></div>
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>Testcases
+                            </h2>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content">
+
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Created at</th>
+                                    <th>Last updated at</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#testcases}}
+                                {{#if active}}
+                                <tr>
+                                    <td><a href="#testcase/details/{{_id}}">{{name}}</a></td>
+                                    <td>{{createdAt}}</td>
+                                    <td>{{updatedAt}}</td>
+                                </tr>
+                                {{/if}}
+                                {{/testcases}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>Testvectors
+                            </h2>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content">
+
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Testcases</th>
+                                    <th>Url</th>
+                                    <th>Created at</th>
+                                    <th>Last updated at</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#testvectors}}
+                                {{#if active}}
+                                <tr>
+                                    <td><a href="#testvector/details/{{_id}}">{{name}}</a></td>
+                                    <td class="cell-list">
+                                        {{#testcases}}
+                                        <span class="cell-list-item">
+                                            {{name}}
+                                        </span>
+                                        {{/testcases}}
+                                    </td>
+                                    <th><a href="{{url}}">Link</a></th>
+                                    <td>{{createdAt}}</td>
+                                    <td>{{updatedAt}}</td>
+                                </tr>
+                                {{/if}}
+                                {{/testvectors}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- start project-detail sidebar -->
+                <div class="col-md-3 col-sm-3 col-xs-12">
+
+                    <section class="panel">
+
+                        <div class="x_title">
+                            <h2>Attributes</h2>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="panel-body">
+
+                            <div class="project_detail">
+                                <p class="title">Name</p>
+                                <p>{{feature.name}}</p>
+                                <p class="title">Feature Group</p>
+                                <p>{{feature.featureGroup.name}}</p>
+                                <p class="title">Created at</p>
+                                <p>{{feature.createdAt}}</p>
+                                <p class="title">Last updated at</p>
+                                <p>{{feature.updatedAt}}</p>
+                                {{#feature.attributeInstances}}
+                                <p class="title">{{attribute.uiName}}</p>
+                                <p>{{value}}</p>
+                                {{/feature.attributeInstances}}
+                            </div>
+
+                            <br>
+
+                        </div>
+
+                    </section>
+
+                </div>
+                <!-- end project-detail sidebar -->
+
+            </div>
+        </div>
+    </div>
+</div>
