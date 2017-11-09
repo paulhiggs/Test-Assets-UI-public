@@ -3,10 +3,10 @@
  */
 
 var App = {
-  controller: {},
-  models: {},
-  views: {},
-  utils: {},
-  constants: {},
-  handler: {}
+    controller: {},
+    models: {},
+    views : {},
+    utils: {},
+    constants: {},
+    handler: {}
 };

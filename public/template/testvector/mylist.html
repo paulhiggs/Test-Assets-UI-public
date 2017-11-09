@@ -13,9 +13,7 @@
                     <thead>
                     <th>Edit</th>
                     <th>Testvector</th>
-                    <th>Feature Group</th>
-                    <th>Feature</th>
-                    <th>Testcase</th>
+                    <th>Testcontent</th>
                     <th>URL</th>
                     <th>Active</th>
                     <th>Include in dash.js JSON</th>
@@ -30,9 +28,7 @@
                     <tfoot>
                     <th>Edit</th>
                     <th>Testvector</th>
-                    <th>Feature Group</th>
-                    <th>Feature</th>
-                    <th>Testcase</th>
+                    <th>Testcontent</th>
                     <th>URL</th>
                     <th>Active</th>
                     <th>Include in dash.js JSON</th>
@@ -46,7 +42,7 @@
                     </tfoot>
                     <tbody>
                     {{#printableElems}}
-                    {{#testcases}}
+                    {{#testcontents}}
                     <tr>
                         <td>
                             <a href="#testvector/edit/{{../_id}}" class="btn btn-info btn-xs"><i
@@ -57,8 +53,6 @@
                                     class="fa fa-trash-o"></i> Delete </a>
                         </td>
                         <td>{{../name}}</td>
-                        <td>{{feature.featureGroup.name}}</td>
-                        <td>{{feature.name}}</td>
                         <td>{{name}}</td>
                         <td><a href="{{../url}}">Link</a></td>
                         <td>{{../active}}</td>
@@ -71,7 +65,7 @@
                         <td>{{../updatedAt}}</td>
                         {{/if}}
                     </tr>
-                    {{/testcases}}
+                    {{/testcontents}}
                     {{/printableElems}}
                     </tbody>
                 </table>

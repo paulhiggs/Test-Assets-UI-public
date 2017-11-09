@@ -2,7 +2,7 @@
     <div class="col-md-12 col-sm-12 col-xs-12">
         <div class="x_panel">
             <div class="x_title">
-                <h2>Testcase List </h2>
+                <h2>Testcontent List </h2>
                 <div class="clearfix"></div>
             </div>
             <div class="x_content">
@@ -12,7 +12,6 @@
                 <table class="table table-striped dataTable" id="datatable" width="100%">
                     <thead>
                     <th>Name</th>
-                    <th>Feature</th>
                     {{#attributes}}
                     {{#if active}}
                     <th>{{uiName}}</th>
@@ -25,7 +24,6 @@
                     </thead>
                     <tfoot>
                     <th>Name</th>
-                    <th>Feature</th>
                     {{#attributes}}
                     {{#if active}}
                     <th>{{uiName}}</th>
@@ -38,9 +36,9 @@
                     </tfoot>
                     <tbody>
                     {{#printableElems}}
+                    {{#if active}}
                     <tr>
-                        <td><a href="#testcase/details/{{_id}}">{{name}}</a></td>
-                        <td>{{feature.name}}</td>
+                        <td><a href="#testcontent/details/{{_id}}">{{name}}</a></td>
                         {{#attributes}}
                         {{#if attribute.active}}
                         <td>{{value}}</td>
@@ -51,6 +49,7 @@
                         <td>{{updatedAt}}</td>
                         {{/if}}
                     </tr>
+                    {{/if}}
                     {{/printableElems}}
                     </tbody>
                 </table>

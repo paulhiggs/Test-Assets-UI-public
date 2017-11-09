@@ -2,7 +2,7 @@
     <div class="col-md-12">
         <div class="x_panel">
             <div class="x_title">
-                <h2>Testcase : {{testcase.name}}
+                <h2>Testcontent : {{testcontent.name}}
                     <small>Details</small>
                 </h2>
                 <div class="clearfix"></div>
@@ -64,19 +64,15 @@
 
                             <div class="project_detail">
                                 <p class="title">Name</p>
-                                <p>{{testcase.name}}</p>
-                                <p class="title">Feature Group</p>
-                                <p>{{testcase.feature.featureGroup.name}}</p>
-                                <p class="title">Feature </p>
-                                <p>{{testcase.feature.name}}</p>
+                                <p>{{testcontent.name}}</p>
                                 <p class="title">Created at</p>
-                                <p>{{testcase.createdAt}}</p>
+                                <p>{{testcontent.createdAt}}</p>
                                 <p class="title">Last updated at</p>
-                                <p>{{testcase.updatedAt}}</p>
-                                {{#testcase.attributeInstances}}
+                                <p>{{testcontent.updatedAt}}</p>
+                                {{testcontent.attributeInstances}}
                                 <p class="title">{{attribute.uiName}}</p>
                                 <p>{{value}}</p>
-                                {{/testcase.attributeInstances}}
+                                {{/testcontent.attributeInstances}}
                             </div>
 
                             <br>

@@ -3,7 +3,7 @@
  */
 
 App.models.UserModel = function () {
-  App.models.MainModel.call(this, 'user');
+    App.models.MainModel.call(this, 'user');
 };
 
 App.models.UserModel.prototype = new App.models.MainModel();

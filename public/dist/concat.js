@@ -57,6 +57,7 @@ App.handler.Errorhandler.handleInputError = function (error) {
  * Created by danielsilhavy on 01.08.16.
  */
 var BASE_URL = 'http://127.0.0.1:3000/v1/';
+//var BASE_URL = 'http://testassets.dashif.org:3000/v1/';
 
 App.constants.requestParameter = {
     attribute: {
@@ -89,7 +90,6 @@ App.constants.requestParameter = {
         CREATE: 'template/featuregroup/create.html',
         EDIT: 'template/featuregroup/edit.html',
         MYLIST: 'template/featuregroup/mylist.html',
-        DETAILS: 'template/featuregroup/details.html',
     },
     feature: {
         GET: BASE_URL + 'features',
@@ -105,7 +105,6 @@ App.constants.requestParameter = {
         CREATE: 'template/feature/create.html',
         EDIT: 'template/feature/edit.html',
         MYLIST: 'template/feature/mylist.html',
-        DETAILS: 'template/feature/details.html',
     },
     testcase: {
         GET: BASE_URL + 'testcases',
@@ -121,7 +120,6 @@ App.constants.requestParameter = {
         CREATE: 'template/testcase/create.html',
         EDIT: 'template/testcase/edit.html',
         MYLIST: 'template/testcase/mylist.html',
-        DETAILS: 'template/testcase/details.html',
     },
     testvector: {
         GET: BASE_URL + 'testvectors',
@@ -130,7 +128,7 @@ App.constants.requestParameter = {
         DELETE: BASE_URL + 'testvectors',
         GET_MULTI: BASE_URL + 'testvectors',
         MYLIST: BASE_URL + 'mytestvectors',
-        GROUPED_LIST: BASE_URL + 'testvectors/groupedlist',
+        GET_MULTI_PAGINATION: BASE_URL + 'testvectors/pagination',
     },
 
     testvector_template: {
@@ -138,8 +136,7 @@ App.constants.requestParameter = {
         CREATE: 'template/testvector/create.html',
         EDIT: 'template/testvector/edit.html',
         MYLIST: 'template/testvector/mylist.html',
-        GROUPED_LIST: 'template/testvector/groupedList.html',
-        DETAILS: 'template/testvector/details.html',
+        GROUPEDLIST: 'template/testvector/groupedList.html',
     },
 
     user: {
@@ -163,11 +160,7 @@ App.constants.requestParameter = {
     },
 
     statistic: {
-        SIZE: BASE_URL + 'statistics/size',
-        TESTVECTOR_TYPES: BASE_URL + 'statistics/testvector/types',
-        TESTCASE_TYPES: BASE_URL + 'statistics/testcase/types',
-        FEATURE_TYPES: BASE_URL + 'statistics/feature/types',
-        FEATUREGROUP_TYPES: BASE_URL + 'statistics/featuregroup/types'
+        SIZE: BASE_URL + 'statistics/size'
     },
 
     LOGIN_USER: BASE_URL + 'users/login',
@@ -363,7 +356,9 @@ App.views.MessageView.renderErrorMessage = function (message) {
  * Created by danielsilhavy on 01.08.16.
  */
 
-var $BODY = $('body'),
+var
+  $BODY = $('body'),
+
   $SIDEBAR_FOOTER = $('.sidebar-footer'),
   $LEFT_COL = $('.left_col'),
   $RIGHT_COL = $('.right_col'),
@@ -382,9 +377,8 @@ App.views.MainView.prototype.renderList = function (data, filterPreferences) {
     App.utils.HTTPUtils.get(App.constants.requestParameter[this.type + '_template'].LIST)
       .then(function (templateData) {
           data = self.getPrintableAttributes(data);
-          data.printableElems = self.formatDate(data.printableElems);
           self.renderHandlebars(templateData, data);
-          self.initializeDataTable('datatable', data, filterPreferences, 0);
+          self.initializeDataTable('datatable', data, filterPreferences);
       });
 };
 
@@ -395,9 +389,8 @@ App.views.MainView.prototype.renderMyList = function (data, filterPreferences) {
     App.utils.HTTPUtils.get(App.constants.requestParameter[this.type + '_template'].MYLIST)
       .then(function (templateData) {
           data = self.getPrintableAttributes(data);
-          data.printableElems = self.formatDate(data.printableElems);
           self.renderHandlebars(templateData, data);
-          self.initializeDataTable('datatable', data, filterPreferences, 1);
+          self.initializeDataTable('datatable', data, filterPreferences);
       })
       .catch(function (error) {
           App.handler.Errorhandler.handleError(error);
@@ -489,7 +482,6 @@ App.views.MainView.prototype.renderDisclaimer = function () {
 
 App.views.MainView.prototype.render = function (html) {
     $(App.constants.targetContainer).html(html);
-    this.setContentHeight();
 };
 
 App.views.MainView.prototype.setContentHeight = function () {
@@ -514,13 +506,13 @@ App.views.MainView.prototype.toggleMenuState = function (loginData) {
     // Show respective menu items
     if (!loginData) {
         link.html('Login');
-        link.attr('href', '#login');
+        link.attr('href', 'index.html#login');
         $('.member').hide();
         $('.admin').hide();
     } else {
         role = loginData.roles[0] || '';
         link.html('Logout');
-        link.attr('href', '#logout');
+        link.attr('href', 'index.html#logout');
         if (role === 'member') {
             $('.member').show();
             $('.admin').hide();
@@ -639,18 +631,16 @@ App.views.MainView.prototype.addDatatablesSearch = function (table, data, filter
     $('.selectpicker').selectpicker();
 };
 
-App.views.MainView.prototype.initializeDataTable = function (id, data, filterPreferences, columnToOrderBy) {
+App.views.MainView.prototype.initializeDataTable = function (id, data, filterPreferences) {
     var self = this;
     var button;
 
-    columnToOrderBy = columnToOrderBy || 0;
     self.createDatatableFilters(id);
     // DataTable
     var table = $('#' + id).DataTable({
         pageLength: 50,
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
         scrollX: true,
-        order: [[columnToOrderBy, 'asc']],
         dom: 'Bfrtip',
         buttons: [
             'pageLength', 'copy', 'csv', 'excel'
@@ -669,7 +659,6 @@ App.views.MainView.prototype.initializeDataTable = function (id, data, filterPre
 
     self.addDatatablesSelect(table);
     self.addDatatablesSearch(table, data, filterPreferences);
-    self.setContentHeight();
 };
 
 App.views.MainView.prototype.setRoute = function (route) {
@@ -717,29 +706,6 @@ App.views.MainView.prototype.getPrintableAttributes = function (data) {
     return data;
 };
 
-App.views.MainView.prototype.resizeChart = function (chart) {
-    $(window).on('resize', function () {
-        if (chart !== null && chart !== undefined) {
-            chart.resize();
-        }
-    });
-};
-
-App.views.MainView.prototype.formatDate = function (entries) {
-    var date;
-
-    entries.map(function (item) {
-        if (item.hasOwnProperty('createdAt')) {
-            date = new Date(item.createdAt);
-            item.createdAt = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
-        }
-        if (item.hasOwnProperty('updatedAt')) {
-            date = new Date(item.updatedAt);
-            item.updatedAt = date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear();
-        }
-    });
-    return entries;
-};
 
 
 
@@ -759,9 +725,8 @@ App.views.AttributeView.prototype.renderList = function (data, filterPreferences
 
     App.utils.HTTPUtils.get(App.constants.requestParameter[this.type + '_template'].LIST)
       .then(function (templateData) {
-          data.entries = self.formatDate(data.entries);
           self.renderHandlebars(templateData, data);
-          self.initializeDataTable('datatable', data, filterPreferences, 0);
+          self.initializeDataTable('datatable', data, filterPreferences);
       });
 };
 
@@ -771,9 +736,8 @@ App.views.AttributeView.prototype.renderMyList = function (data, filterPreferenc
 
     App.utils.HTTPUtils.get(App.constants.requestParameter[this.type + '_template'].MYLIST)
       .then(function (templateData) {
-          data.entries = self.formatDate(data.entries);
           self.renderHandlebars(templateData, data);
-          self.initializeDataTable('datatable', data, filterPreferences, 1);
+          self.initializeDataTable('datatable', data, filterPreferences);
           $('.delete-button').on('click', function () {
               button = this;
               alertify.confirm('Delete an element', 'Are you sure you want to delete the element?', function () {
@@ -834,7 +798,7 @@ App.views.AttributeView.prototype.getIdFromButton = function (element) {
  */
 
 App.views.DefaultView = function () {
-    App.views.MainView.call(this, 'default');
+    App.views.MainView.call(this,'default');
 };
 
 App.views.DefaultView.prototype = new App.views.MainView();
@@ -845,15 +809,7 @@ App.views.DefaultView.prototype.renderIndex = function (data) {
 
     App.utils.HTTPUtils.get(App.constants.requestParameter.default_template.INDEX)
       .then(function (templateData) {
-          data = self.setActivities(data);
           self.renderHandlebars(templateData, data);
-          self.createDonutTc(data.testcaseTypes);
-          self.createDonutTv(data.testvectorTypes);
-          self.createDonutF(data.featureTypes);
-          self.createDonutTvTcF(data.testvectorTypes);
-      })
-      .catch(function (err) {
-          throw new Error(err);
       });
 };
 
@@ -865,400 +821,6 @@ App.views.DefaultView.prototype.renderFAQ = function () {
           self.renderHandlebars(templateData);
       });
 };
-
-App.views.DefaultView.prototype.setActivities = function (data) {
-    var additions = [];
-    var updates = [];
-    var self = this;
-
-    data.testvectorTypes.forEach(function (elem) {
-        self.createActivityEntry(elem, 'Testvector', additions, updates);
-    });
-    data.testcaseTypes.forEach(function (elem) {
-        self.createActivityEntry(elem, 'Testcase', additions, updates);
-    });
-    data.featureTypes.forEach(function (elem) {
-        self.createActivityEntry(elem, 'Feature', additions, updates);
-    });
-    data.featureGroupTypes.forEach(function (elem) {
-        self.createActivityEntry(elem, 'Feature Group', additions, updates);
-    });
-    data.additions = additions.sort(this.sortByDate).slice(0, 5);
-    data.updates = updates.sort(this.sortByDate).slice(0, 5);
-    return data;
-};
-
-App.views.DefaultView.prototype.createActivityEntry = function (elem, type, additions, updates) {
-    var createdAt = new Date(1970, 1, 1);
-    var updatedAt = new Date(1970, 1, 1);
-    var months = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
-    var urlTypes = {
-        'Feature Group': 'featuregroup',
-        'Feature': 'feature',
-        'Testcase': 'testcase',
-        'Testvector': 'testvector'
-    };
-    var detailsUrl = '#' + urlTypes[type] + '/details/' + elem._id;
-
-    if (elem.createdAt) {
-        createdAt = new Date(elem.createdAt);
-    }
-    if (elem.updatedAt) {
-        updatedAt = new Date(elem.updatedAt);
-    }
-    additions.push({
-        type: type,
-        date: {full: createdAt, month: months[createdAt.getMonth()], day: createdAt.getDate()},
-        name: elem.name,
-        detailsUrl: detailsUrl
-    });
-    updates.push({
-        type: type,
-        date: {full: updatedAt, month: months[updatedAt.getMonth()], day: updatedAt.getDate()},
-        name: elem.name,
-        detailsUrl: detailsUrl
-    });
-};
-
-
-App.views.DefaultView.prototype.sortByDate = function (a, b) {
-    return new Date(b.date.full) - new Date(a.date.full);
-};
-
-App.views.DefaultView.prototype.createDonutF = function (data) {
-    var currentFeatureGroups = [];
-    var featureGroups = [];
-    var featureGroupNames = [];
-    var myChart = echarts.init(document.getElementById('donutF'));
-
-    data = data || [];
-    data.forEach(function (item) {
-        if (!currentFeatureGroups[item.featureGroup._id]) {
-            currentFeatureGroups[item.featureGroup._id] = {
-                value: 1,
-                name: item.featureGroup.name
-            };
-        } else {
-            currentFeatureGroups[item.featureGroup._id].value += 1;
-        }
-    });
-
-
-    for (var fg in currentFeatureGroups) {
-        if (currentFeatureGroups.hasOwnProperty(fg)) {
-            featureGroupNames.push(currentFeatureGroups[fg].name);
-            featureGroups.push(currentFeatureGroups[fg]);
-        }
-    }
-
-    var option = {
-        tooltip: {
-            trigger: 'item',
-            formatter: "{a} <br/>{b} : {c} ({d}%)"
-        },
-        legend: {
-            x: 'center',
-            y: 'bottom',
-            data: featureGroupNames
-        },
-        toolbox: {
-            show: true,
-            feature: {
-                saveAsImage: {
-                    show: true,
-                    title: "Save Image"
-                }
-            }
-        },
-        calculable: true,
-        series: [{
-            name: 'Features per Feature Group',
-            type: 'pie',
-            radius: [25, 90],
-            center: ['50%', 170],
-            roseType: 'area',
-            x: '50%',
-            max: 40,
-            sort: 'ascending',
-            data: featureGroups,
-            itemStyle: {
-                normal: {
-                    label: {
-                        show: false
-                    }
-                }
-            },
-        }]
-    };
-    myChart.setOption(option);
-    this.resizeChart(myChart);
-};
-
-App.views.DefaultView.prototype.createDonutTc = function (data) {
-    var currentFeatureGroups = [];
-    var currentFeatures = [];
-    var features = [];
-    var featureGroups = [];
-    var myChart = echarts.init(document.getElementById('donutTc'));
-
-    data = data || [];
-    data.forEach(function (item) {
-        if (!currentFeatures[item.feature._id]) {
-            currentFeatures[item.feature._id] = {
-                value: 1,
-                name: item.feature.name
-            };
-        } else {
-            currentFeatures[item.feature._id].value += 1;
-        }
-        if (!currentFeatureGroups[item.feature.featureGroup._id]) {
-            currentFeatureGroups[item.feature.featureGroup._id] = {
-                value: 1,
-                name: item.feature.featureGroup.name
-            };
-        } else {
-            currentFeatureGroups[item.feature.featureGroup._id].value += 1;
-        }
-    });
-
-
-    for (var f in currentFeatures) {
-        if (currentFeatures.hasOwnProperty(f)) {
-            features.push(currentFeatures[f]);
-        }
-    }
-    for (var fg in currentFeatureGroups) {
-        if (currentFeatureGroups.hasOwnProperty(fg)) {
-            featureGroups.push(currentFeatureGroups[fg]);
-        }
-    }
-
-    var option = {
-        tooltip: {
-            trigger: 'item',
-            formatter: "{a} <br/>{b} : {c} ({d}%)"
-        },
-        legend: {
-            orient: 'horizontal',
-            x: 'left',
-            data: featureGroups
-        },
-        calculable: false,
-        toolbox: {
-            show: true,
-            feature: {
-                saveAsImage: {
-                    show: true,
-                    title: "Save Image"
-                }
-            }
-        },
-        series: [
-            {
-                name: 'Feature Group',
-                type: 'pie',
-                selectedMode: 'single',
-                radius: [0, 70],
-
-                // for funnel
-                x: '20%',
-                width: '40%',
-                funnelAlign: 'right',
-                max: 1548,
-
-                itemStyle: {
-                    normal: {
-                        label: {
-                            show: false
-                        }
-                    }
-                },
-                data: featureGroups
-            },
-            {
-                name: 'Feature',
-                type: 'pie',
-                radius: [100, 140],
-
-                // for funnel
-                x: '60%',
-                width: '35%',
-                funnelAlign: 'left',
-                max: 1048,
-
-                data: features
-            }
-        ]
-    };
-    myChart.setOption(option);
-    this.resizeChart(myChart);
-};
-
-App.views.DefaultView.prototype.createDonutTv = function (data) {
-    var currentFeatureGroups = [];
-    var currentFeatures = [];
-    var features = [];
-    var featureGroups = [];
-    var myChart = echarts.init(document.getElementById('donutTv'));
-
-    data = data || [];
-    data.forEach(function (item) {
-        item.testcases.forEach(function (tc) {
-            if (!currentFeatures[tc.feature._id]) {
-                currentFeatures[tc.feature._id] = {
-                    value: 1,
-                    name: tc.feature.name
-                };
-            } else {
-                currentFeatures[tc.feature._id].value += 1;
-            }
-            if (!currentFeatureGroups[tc.feature.featureGroup._id]) {
-                currentFeatureGroups[tc.feature.featureGroup._id] = {
-                    value: 1,
-                    name: tc.feature.featureGroup.name
-                };
-            } else {
-                currentFeatureGroups[tc.feature.featureGroup._id].value += 1;
-            }
-        });
-    });
-
-    for (var f in currentFeatures) {
-        if (currentFeatures.hasOwnProperty(f)) {
-            features.push(currentFeatures[f]);
-        }
-    }
-    for (var fg in currentFeatureGroups) {
-        if (currentFeatureGroups.hasOwnProperty(fg)) {
-            featureGroups.push(currentFeatureGroups[fg]);
-        }
-    }
-
-    var option = {
-        tooltip: {
-            trigger: 'item',
-            formatter: "{a} <br/>{b} : {c} ({d}%)"
-        },
-        legend: {
-            orient: 'horizontal',
-            x: 'left',
-            data: featureGroups
-        },
-        calculable: false,
-        toolbox: {
-            show: true,
-            feature: {
-                saveAsImage: {
-                    show: true,
-                    title: "Save Image"
-                }
-            }
-        },
-        series: [
-            {
-                name: 'Feature Group',
-                type: 'pie',
-                selectedMode: 'single',
-                radius: [0, 70],
-
-                // for funnel
-                x: '20%',
-                width: '40%',
-                funnelAlign: 'right',
-                max: 1548,
-
-                itemStyle: {
-                    normal: {
-                        label: {
-                            show: false
-                        }
-                    }
-                },
-                data: featureGroups
-            },
-            {
-                name: 'Feature',
-                type: 'pie',
-                radius: [100, 140],
-
-                // for funnel
-                x: '60%',
-                width: '35%',
-                funnelAlign: 'left',
-                max: 1048,
-
-                data: features
-            }
-        ]
-    };
-    myChart.setOption(option);
-    this.resizeChart(myChart);
-};
-
-App.views.DefaultView.prototype.createDonutTvTcF = function (data) {
-    var currentTestcases = [];
-    var testcases = [];
-    var myChart = echarts.init(document.getElementById('donutTvTcF'));
-
-    data = data || [];
-    data.forEach(function (item) {
-        item.testcases.forEach(function (tc) {
-            if (!currentTestcases[tc._id]) {
-                currentTestcases[tc._id] = {
-                    value: 1,
-                    name: tc.name + '(' + tc.feature.name + ')'
-                };
-            } else {
-                currentTestcases[tc._id].value += 1;
-            }
-        });
-    });
-
-    for (var tc in currentTestcases) {
-        if (currentTestcases.hasOwnProperty(tc)) {
-            testcases.push(currentTestcases[tc]);
-        }
-    }
-
-    var option = {
-        tooltip: {
-            trigger: 'item',
-            formatter: "{a} <br/>{b} : {c} ({d}%)"
-        },
-
-        calculable: false,
-        toolbox: {
-            show: true,
-            feature: {
-                saveAsImage: {
-                    show: true,
-                    title: "Save Image"
-                }
-            }
-        },
-        series: [
-            {
-                name: 'Testcase (Feature) ',
-                type: 'pie',
-                selectedMode: 'single',
-                radius: [0, 70],
-
-                // for funnel
-                x: '20%',
-                width: '40%',
-                funnelAlign: 'right',
-                max: 1548,
-
-                data: testcases
-            },
-        ]
-    };
-    myChart.setOption(option);
-    this.resizeChart(myChart);
-
-};
-
-
 
 
 
@@ -1275,102 +837,11 @@ App.views.FeatureGroupView.prototype = new App.views.MainView();
 App.views.FeatureGroupView.prototype.constructor = App.views.FeatureGroupView;
 
 
-App.views.FeatureGroupView.prototype.renderDetails = function (data) {
-    var self = this;
-
-    data.featureGroup = self.formatDate([data.featureGroup])[0];
-    data.features = self.formatDate(data.features);
-    data.testcases = self.formatDate(data.testcases);
-    data.testvectors = self.formatDate(data.testvectors);
-    App.utils.HTTPUtils.get(App.constants.requestParameter[this.type + '_template'].DETAILS)
-      .then(function (templateData) {
-          self.renderHandlebars(templateData, data);
-          self.renderTestvectorChart(data.testvectors);
-      });
-};
-
-App.views.FeatureGroupView.prototype.renderTestvectorChart = function (data) {
-    var currentFeatures = [];
-    var features = [];
-    var myChart = echarts.init(document.getElementById('chart'));
-
-    data = data || [];
-    data.forEach(function (item) {
-        item.testcases.forEach(function (tc) {
-            if (!currentFeatures[tc.feature._id]) {
-                currentFeatures[tc.feature._id] = {
-                    value: 1,
-                    name: tc.feature.name
-                };
-            } else {
-                currentFeatures[tc.feature._id].value += 1;
-            }
-        });
-    });
-
-    for (var f in currentFeatures) {
-        if (currentFeatures.hasOwnProperty(f)) {
-            features.push(currentFeatures[f]);
-        }
-    }
-
-    var option = {
-        title: {
-            text: 'Testvectors per Feature',
-            x: 'center'
-        },
-        tooltip: {
-            trigger: 'item',
-            formatter: "{a} <br/>{b} : {c} ({d}%)"
-        },
-        legend: {
-            orient: 'vertical',
-            x: 'left',
-            data: features
-        },
-        calculable: false,
-        toolbox: {
-            show: true,
-            feature: {
-                saveAsImage: {
-                    show: true,
-                    title: "Save Image"
-                }
-            }
-        },
-        series: [
-            {
-                name: 'Feature',
-                type: 'pie',
-                radius: [0, 140],
-
-                // for funnel
-                x: '60%',
-                width: '35%',
-                funnelAlign: 'left',
-                max: 1048,
-                itemStyle: {
-                    normal: {
-                        label: {
-                            show: false
-                        }
-                    }
-                },
-
-                data: features
-            }
-        ]
-    };
-    myChart.setOption(option);
-    this.resizeChart(myChart);
-};
-
 App.views.FeatureGroupView.prototype.getFieldValues = function () {
     var values = {};
 
     values.name = $('#name').val();
     values.active = $('input[name=active]:checked').val();
-    values.includeInDashjsJson = $('input[name=json]:checked').val();
     values.attributeInstances = [];
     $('.dynamic-attribute').each(function (i, obj) {
         values.attributeInstances.push({
@@ -1381,14 +852,12 @@ App.views.FeatureGroupView.prototype.getFieldValues = function () {
     return values;
 };
 
-
 App.views.FeatureGroupView.prototype.getEditFieldValues = function () {
     var values = {};
     var self = this;
 
     values.name = $('#name').val();
     values.active = $('input[name=active]:checked').val();
-    values.includeInDashjsJson = $('input[name=json]:checked').val();
     values.attributeInstances = [];
     $('.dynamic-attribute').each(function (i, obj) {
         values.attributeInstances.push({
@@ -1415,101 +884,13 @@ App.views.FeatureView = function () {
 App.views.FeatureView.prototype = new App.views.MainView();
 App.views.FeatureView.prototype.constructor = App.views.FeatureView;
 
-App.views.FeatureView.prototype.renderDetails = function (data) {
-    var self = this;
 
-    data.feature = self.formatDate([data.feature])[0];
-    data.testcases = self.formatDate(data.testcases);
-    data.testvectors = self.formatDate(data.testvectors);
-    App.utils.HTTPUtils.get(App.constants.requestParameter[this.type + '_template'].DETAILS)
-      .then(function (templateData) {
-          self.renderHandlebars(templateData, data);
-          self.renderTestvectorChart(data.testvectors);
-      });
-};
-
-App.views.FeatureView.prototype.renderTestvectorChart = function (data) {
-    var currentTestcases = [];
-    var testcases = [];
-    var myChart = echarts.init(document.getElementById('chart'));
-
-    data = data || [];
-    data.forEach(function (item) {
-        item.testcases.forEach(function (tc) {
-            if (!currentTestcases[tc._id]) {
-                currentTestcases[tc._id] = {
-                    value: 1,
-                    name: tc.name
-                };
-            } else {
-                currentTestcases[tc._id].value += 1;
-            }
-        });
-    });
-
-    for (var f in currentTestcases) {
-        if (currentTestcases.hasOwnProperty(f)) {
-            testcases.push(currentTestcases[f]);
-        }
-    }
-
-    var option = {
-        title: {
-            text: 'Testvectors per Testcase',
-            x: 'center'
-        },
-        tooltip: {
-            trigger: 'item',
-            formatter: "{a} <br/>{b} : {c} ({d}%)"
-        },
-        legend: {
-            orient: 'vertical',
-            x: 'left',
-            data: testcases
-        },
-        calculable: false,
-        toolbox: {
-            show: true,
-            feature: {
-                saveAsImage: {
-                    show: true,
-                    title: "Save Image"
-                }
-            }
-        },
-        series: [
-            {
-                name: 'Testcase',
-                type: 'pie',
-                radius: [0, 140],
-
-                // for funnel
-                x: '60%',
-                width: '35%',
-                funnelAlign: 'left',
-                max: 1048,
-                itemStyle: {
-                    normal: {
-                        label: {
-                            show: false
-                        }
-                    }
-                },
-
-                data: testcases
-            }
-        ]
-    };
-    myChart.setOption(option);
-    this.resizeChart(myChart);
-};
 
 App.views.FeatureView.prototype.getFieldValues = function () {
     var values = {};
 
     values.name = $('#name').val();
     values.active = $('input[name=active]:checked').val();
-    values.includeInDashjsJson = $('input[name=json]:checked').val();
     values.attributeInstances = [];
     $('.dynamic-attribute').each(function (i, obj) {
         values.attributeInstances.push({
@@ -1527,7 +908,6 @@ App.views.FeatureView.prototype.getEditFieldValues = function () {
 
     values.name = $('#name').val();
     values.active = $('input[name=active]:checked').val();
-    values.includeInDashjsJson = $('input[name=json]:checked').val();
     values.attributeInstances = [];
     $('.dynamic-attribute').each(function (i, obj) {
         values.attributeInstances.push({
@@ -1597,23 +977,12 @@ App.views.TestcaseView.prototype = new App.views.MainView();
 App.views.TestcaseView.prototype.constructor = App.views.FeatureGroupView;
 
 
-App.views.TestcaseView.prototype.renderDetails = function (data) {
-    var self = this;
-
-    data.testcase = self.formatDate([data.testcase])[0];
-    data.testvectors = self.formatDate(data.testvectors);
-    App.utils.HTTPUtils.get(App.constants.requestParameter[this.type + '_template'].DETAILS)
-      .then(function (templateData) {
-          self.renderHandlebars(templateData, data);
-      });
-};
 
 App.views.TestcaseView.prototype.getFieldValues = function () {
     var values = {};
 
     values.name = $('#name').val();
     values.active = $('input[name=active]:checked').val();
-    values.includeInDashjsJson = $('input[name=json]:checked').val();
     values.attributeInstances = [];
     $('.dynamic-attribute').each(function (i, obj) {
         values.attributeInstances.push({
@@ -1631,7 +1000,6 @@ App.views.TestcaseView.prototype.getEditFieldValues = function () {
 
     values.name = $('#name').val();
     values.active = $('input[name=active]:checked').val();
-    values.includeInDashjsJson = $('input[name=json]:checked').val();
     values.attributeInstances = [];
     $('.dynamic-attribute').each(function (i, obj) {
         values.attributeInstances.push({
@@ -1719,77 +1087,35 @@ App.views.TestvectorView.prototype.renderCreate = function (data) {
       });
 
     return q.promise;
-
 };
 
-App.views.TestvectorView.prototype.renderList = function (data, filterPreferences) {
+App.views.MainView.prototype.renderGroupedList = function (data, filterPreferences) {
     var self = this;
-    var datatableOptions = {};
-    var columns = [
-        {data: 'testvector'},
-        {data: 'featureGroup'},
-        {data: 'feature'},
-        {data: 'testcase'},
-        {data: 'url'},
-        {data: 'play'},
-    ];
-    data.attributes.forEach(function (item) {
-        if (item.active) {
-            columns.push({data: item.uiName});
-        }
-    });
-    if (data.isAdmin) {
-        columns.push({data: 'createdAt'}, {data: 'updatedAt'});
-    }
-    datatableOptions.columns = columns;
-    datatableOptions.ajax = {
-        url: App.constants.requestParameter.testvector.GET
-    };
-    App.utils.HTTPUtils.get(App.constants.requestParameter[this.type + '_template'].LIST)
+    var currentFeatures;
+    var currentFeatureGroups;
+
+    data.printableElems = [];
+    App.utils.HTTPUtils.get(App.constants.requestParameter[this.type + '_template'].GROUPEDLIST)
       .then(function (templateData) {
+          data = self.getPrintableAttributes(data);
+          data.printableElems.forEach(function (elem) {
+              elem.features = [];
+              elem.featureGroups = [];
+              currentFeatures = {};
+              currentFeatureGroups = {};
+              elem.testcases.forEach(function (tc) {
+                  if (!currentFeatures[tc.feature._id]) {
+                      currentFeatures[tc.feature._id] = true;
+                      elem.features.push(tc.feature);
+                  }
+                  if (!currentFeatureGroups[tc.feature.featureGroup._id]) {
+                      currentFeatureGroups[tc.feature.featureGroup._id] = true;
+                      elem.featureGroups.push(tc.feature.featureGroup);
+                  }
+              });
+          });
           self.renderHandlebars(templateData, data);
-          self.initializeDataTableAjax('datatable', data, filterPreferences, datatableOptions);
-      });
-};
-
-App.views.TestvectorView.prototype.renderDetails = function (data) {
-    var self = this;
-
-
-    data.testvector = self.formatDate([data.testvector])[0];
-    App.utils.HTTPUtils.get(App.constants.requestParameter[this.type + '_template'].DETAILS)
-      .then(function (templateData) {
-          self.renderHandlebars(templateData, data);
-      });
-};
-
-App.views.TestvectorView.prototype.renderGroupedList = function (data, filterPreferences) {
-    var self = this;
-    var datatableOptions = {};
-    var columns = [
-        {data: 'testvector'},
-        {data: 'featureGroups'},
-        {data: 'features'},
-        {data: 'testcases'},
-        {data: 'url'},
-        {data: 'play'},
-    ];
-    data.attributes.forEach(function (item) {
-        if (item.active) {
-            columns.push({data: item.uiName});
-        }
-    });
-    if (data.isAdmin) {
-        columns.push({data: 'createdAt'}, {data: 'updatedAt'});
-    }
-    datatableOptions.columns = columns;
-    datatableOptions.ajax = {
-        url: App.constants.requestParameter.testvector.GROUPED_LIST
-    };
-    App.utils.HTTPUtils.get(App.constants.requestParameter[this.type + '_template'].GROUPED_LIST)
-      .then(function (templateData) {
-          self.renderHandlebars(templateData, data);
-          self.initializeDataTableAjax('datatable', data, filterPreferences, datatableOptions);
+          self.initializeDataTable('datatable', data, filterPreferences);
       });
 };
 
@@ -1827,11 +1153,9 @@ App.views.TestvectorView.prototype.renderEdit = function (data) {
               EventBus.dispatch(App.constants.events[self.type].EDIT, this, self.getEditFieldValues());
               return false;
           });
-          $('#import-attributes-button').bind('click', function () {
-              self.importAttributes();
-          });
           q.resolve();
       });
+
     return q.promise;
 };
 
@@ -1857,7 +1181,6 @@ App.views.TestvectorView.prototype.getFieldValues = function () {
 
     values.name = $('#name').val();
     values.active = $('input[name=active]:checked').val();
-    values.includeInDashjsJson = $('input[name=json]:checked').val();
     values.url = $('#url').val();
     values.attributeInstances = [];
     $('.dynamic-attribute').each(function (i, obj) {
@@ -1879,7 +1202,6 @@ App.views.TestvectorView.prototype.getEditFieldValues = function () {
 
     values.name = $('#name').val();
     values.active = $('input[name=active]:checked').val();
-    values.includeInDashjsJson = $('input[name=json]:checked').val();
     values.url = $('#url').val();
     values.attributeInstances = [];
     $('.dynamic-attribute').each(function (i, obj) {
@@ -1921,74 +1243,6 @@ App.views.TestvectorView.prototype.getTestcasesByFeature = function (testcases) 
     }
 
     return result;
-};
-
-App.views.TestvectorView.prototype.initializeDataTableAjax = function (id, data, filterPreferences, datatableOptions) {
-    var self = this;
-    var buttonCommon = {
-        exportOptions: {
-            format: {
-                body: function (data, row, column, node) {
-                    // if this is the first column and "details" is in the url it must be the textvector column.
-                    if (column === 0 && data.indexOf('details') !== -1) {
-                        return data.replace(/<a\b[^>]*>/i, "").replace(/<\/a>/i, "");
-                    }
-                    else if (data.indexOf('</a>') !== -1) {
-                        data = data.match(/href=([^]*)/)[1];
-                        if (data.indexOf('>Link</a>')) {
-                            data = data.replace('>Link</a>', '');
-                        }
-                        if (data.indexOf('>Play</a>')) {
-                            data = data.replace('>Play</a>', '');
-                        }
-                    }
-                    return data;
-                }
-            }
-        }
-    };
-
-    datatableOptions = datatableOptions || {};
-    datatableOptions.pageLength = 50;
-    datatableOptions.deferRender = true;
-    datatableOptions.ajax.dataSrc = function (json) {
-        var result = [];
-
-        if (data.isAdmin) {
-            return json.data;
-        }
-        else if (json && json.data && json.data.length) {
-            result = json.data.filter(function (item) {
-                return item.active;
-            });
-        }
-
-        return result;
-    };
-    datatableOptions.lengthMenu = [[10, 25, 50, -1], [10, 25, 50, "All"]];
-    datatableOptions.scrollX = true;
-    datatableOptions.dom = 'Bfrtip';
-    datatableOptions.buttons = [
-        'pageLength',
-        $.extend(true, {}, buttonCommon, {
-            extend: 'copyHtml5'
-        }),
-        $.extend(true, {}, buttonCommon, {
-            extend: 'excelHtml5',
-            fieldSeparator: ';'
-        }),
-        $.extend(true, {}, buttonCommon, {
-            extend: 'csvHtml5',
-            fieldSeparator: ';'
-        })];
-    datatableOptions.deferRender = true;
-    self.createDatatableFilters(id);
-    // DataTable
-    var table = $('#' + id).DataTable(datatableOptions);
-
-    self.addDatatablesSelect(table);
-    self.addDatatablesSearch(table, data, filterPreferences);
-    self.setContentHeight();
 };
 
 
@@ -2094,25 +1348,19 @@ App.views.UserView.prototype.getIdFromButton = function (element) {
     };
 
     App.models.LoginModel.prototype.logoutUser = function () {
-        localStorage.removeItem('dashtoken');
-        Cookies.remove('dashtoken');
+        sessionStorage.removeItem('dashtoken');
     };
 
     App.models.LoginModel.prototype.getLoginData = function () {
-        if (localStorage.getItem('dashtoken')) {
-            return $.parseJSON(localStorage.getItem('dashtoken'));
-        } else if (Cookies.get('dashtoken')) {
-            return $.parseJSON(Cookies.get('dashtoken'));
-        }
-        else {
+        if (sessionStorage.getItem('dashtoken')) {
+            return $.parseJSON(sessionStorage.getItem('dashtoken'));
+        } else {
             return null;
         }
     };
 
     App.models.LoginModel.prototype.saveLoginData = function (data) {
-        localStorage.setItem('dashtoken', JSON.stringify(data));
-        // we also store it in a cookie in case the user opens a protected page in a new tab
-        Cookies.set('dashtoken', JSON.stringify(data));
+        sessionStorage.setItem('dashtoken', JSON.stringify(data));
     };
 
     App.models.LoginModel.prototype.getFilterPreferences = function () {
@@ -2166,12 +1414,13 @@ App.views.UserView.prototype.getIdFromButton = function (element) {
 
     };
 
-    App.models.LoginModel.prototype.getDisclaimer = function (loginData) {
+    App.models.LoginModel.prototype.getDisclaimer = function () {
+        var user = this.getLoginData();
         var username = 'nouser';
         var item;
 
-        if (loginData && loginData.username) {
-            username = loginData.username;
+        if (user && user.username) {
+            username = user.username;
         }
 
         if (localStorage.getItem('disclaimer')) {
@@ -2213,27 +1462,11 @@ App.views.UserView.prototype.getIdFromButton = function (element) {
     };
 
     App.models.LoginModel.prototype.getToken = function () {
-        var token = null;
-
-        if (localStorage.getItem('dashtoken')) {
-            token = $.parseJSON(localStorage.getItem('dashtoken')).token || null;
-        } else if (Cookies.get('dashtoken')) {
-            token = $.parseJSON(Cookies.get('dashtoken')).token || null;
+        if (sessionStorage.getItem('dashtoken') && $.parseJSON(sessionStorage.getItem('dashtoken')).token) {
+            return $.parseJSON(sessionStorage.getItem('dashtoken')).token;
+        } else {
+            return null;
         }
-
-        return token;
-    };
-
-    App.models.LoginModel.prototype.isAdmin = function () {
-        var loginData = this.getLoginData();
-
-        if (!loginData || !loginData.roles || !loginData.roles.length) {
-            return false;
-        }
-
-        return loginData.roles.filter(function (role) {
-            return role === 'superuser' || role === 'admin';
-        }).length;
     };
 })();
 
@@ -2245,15 +1478,14 @@ App.views.UserView.prototype.getIdFromButton = function (element) {
  * Created by danielsilhavy on 02.08.16.
  */
 
-App.models.MainModel = function (type) {
+App.models.MainModel = function () {
+    "use strict";
     this.loginModel = App.models.LoginModel.getInstance();
-    this.type = type;
 };
 
-App.models.MainModel.prototype.getElements = function () {
+App.models.MainModel.prototype.getElements = function (url) {
     var q = Q.defer();
     var token = this.loginModel.getToken();
-    var url = App.constants.requestParameter[this.type].GET_MULTI;
 
     App.utils.HTTPUtils.get(url,token)
       .then(function (data) {
@@ -2267,10 +1499,9 @@ App.models.MainModel.prototype.getElements = function () {
 };
 
 
-App.models.MainModel.prototype.createElements = function (data) {
+App.models.MainModel.prototype.createElements = function(url,data) {
     var q = Q.defer();
     var token = this.loginModel.getToken();
-    var url = App.constants.requestParameter[this.type].CREATE;
 
     App.utils.HTTPUtils.post(url,data,token)
       .then(function () {
@@ -2283,10 +1514,9 @@ App.models.MainModel.prototype.createElements = function (data) {
     return q.promise;
 };
 
-App.models.MainModel.prototype.editElement = function (data) {
+App.models.MainModel.prototype.editElement = function (url,data) {
     var q = Q.defer();
     var token = this.loginModel.getToken();
-    var url = App.constants.requestParameter[this.type].EDIT;
 
     App.utils.HTTPUtils.put(url + '/' + data.id,data,token)
       .then(function () {
@@ -2299,10 +1529,9 @@ App.models.MainModel.prototype.editElement = function (data) {
     return q.promise;
 };
 
-App.models.MainModel.prototype.deleteElement = function (id) {
+App.models.MainModel.prototype.deleteElement = function (url,id) {
     var q = Q.defer();
     var token = this.loginModel.getToken();
-    var url = App.constants.requestParameter[this.type].DELETE;
 
     App.utils.HTTPUtils.delete(url + '/' + id,token)
       .then(function () {
@@ -2315,10 +1544,9 @@ App.models.MainModel.prototype.deleteElement = function (id) {
     return q.promise;
 };
 
-App.models.MainModel.prototype.getElementById = function (id) {
+App.models.MainModel.prototype.getElementById = function (url,id) {
     var q = Q.defer();
     var token = this.loginModel.getToken();
-    var url = App.constants.requestParameter[this.type].GET;
 
     App.utils.HTTPUtils.get(url + '/' + id,token)
       .then(function (data) {
@@ -2331,10 +1559,9 @@ App.models.MainModel.prototype.getElementById = function (id) {
     return q.promise;
 };
 
-App.models.MainModel.prototype.getMyElements = function () {
+App.models.MainModel.prototype.getMyElements = function (url) {
     var q = Q.defer();
     var token = this.loginModel.getToken();
-    var url = App.constants.requestParameter[this.type].MYLIST;
 
     App.utils.HTTPUtils.get(url,token)
       .then(function (data) {
@@ -2352,7 +1579,7 @@ App.models.MainModel.prototype.getMyElements = function () {
 
 
 App.models.AttributeModel = function () {
-    App.models.MainModel.call(this, 'attribute');
+    App.models.MainModel.call(this);
 };
 
 
@@ -2365,7 +1592,7 @@ App.models.AttributeModel.prototype.constructor = App.models.AttributeModel;
 
 
 App.models.FeatureGroupModel = function () {
-    App.models.MainModel.call(this, 'featureGroup');
+    App.models.MainModel.call(this);
 };
 
 App.models.FeatureGroupModel.prototype = new App.models.MainModel();
@@ -2374,20 +1601,6 @@ App.models.FeatureGroupModel.prototype.getAttributes = function () {
     var q = Q.defer();
 
     App.utils.HTTPUtils.get(App.constants.requestParameter.attribute.GET_MULTI + '?type=' + App.constants.types.FEATURE_GROUP)
-      .then(function (data) {
-          q.resolve(data);
-      })
-      .catch(function (error) {
-          q.reject(error);
-      });
-
-    return q.promise;
-};
-
-App.models.FeatureGroupModel.prototype.getDetails = function (id) {
-    var q = Q.defer();
-
-    App.utils.HTTPUtils.get(App.constants.requestParameter.featureGroup.GET + '/' + id + '/details')
       .then(function (data) {
           q.resolve(data);
       })
@@ -2418,7 +1631,7 @@ App.models.FeatureGroupModel.prototype.constructor = App.models.FeatureGroupMode
  */
 
 App.models.FeatureModel = function () {
-    App.models.MainModel.call(this, 'feature');
+    App.models.MainModel.call(this);
 };
 
 App.models.FeatureModel.prototype = new App.models.MainModel();
@@ -2441,20 +1654,6 @@ App.models.FeatureModel.prototype.getTestcases = function (id) {
     var q = Q.defer();
 
     App.utils.HTTPUtils.get(App.constants.requestParameter.feature.GET + '/' + id + '/testcases')
-      .then(function (data) {
-          q.resolve(data);
-      })
-      .catch(function (error) {
-          q.reject(error);
-      });
-
-    return q.promise;
-};
-
-App.models.FeatureModel.prototype.getDetails = function (id) {
-    var q = Q.defer();
-
-    App.utils.HTTPUtils.get(App.constants.requestParameter.feature.GET + '/' + id + '/details')
       .then(function (data) {
           q.resolve(data);
       })
@@ -2497,58 +1696,6 @@ App.models.FeatureModel.prototype.constructor = App.models.FeatureModel;
           });
         return q.promise;
     };
-
-    App.models.StatisticModel.prototype.getTestvectorTypes = function () {
-        var q = Q.defer();
-
-        App.utils.HTTPUtils.get(App.constants.requestParameter.statistic.TESTVECTOR_TYPES)
-          .then(function (data) {
-              q.resolve(data);
-          })
-          .catch(function (error) {
-              q.reject(error);
-          });
-        return q.promise;
-    };
-
-    App.models.StatisticModel.prototype.getTestcaseTypes = function () {
-        var q = Q.defer();
-
-        App.utils.HTTPUtils.get(App.constants.requestParameter.statistic.TESTCASE_TYPES)
-          .then(function (data) {
-              q.resolve(data);
-          })
-          .catch(function (error) {
-              q.reject(error);
-          });
-        return q.promise;
-    };
-
-    App.models.StatisticModel.prototype.getFeatureTypes = function () {
-        var q = Q.defer();
-
-        App.utils.HTTPUtils.get(App.constants.requestParameter.statistic.FEATURE_TYPES)
-          .then(function (data) {
-              q.resolve(data);
-          })
-          .catch(function (error) {
-              q.reject(error);
-          });
-        return q.promise;
-    };
-
-    App.models.StatisticModel.prototype.getFeatureGroupTypes = function () {
-        var q = Q.defer();
-
-        App.utils.HTTPUtils.get(App.constants.requestParameter.statistic.FEATUREGROUP_TYPES)
-          .then(function (data) {
-              q.resolve(data);
-          })
-          .catch(function (error) {
-              q.reject(error);
-          });
-        return q.promise;
-    };
 })();
 
 /**
@@ -2556,7 +1703,7 @@ App.models.FeatureModel.prototype.constructor = App.models.FeatureModel;
  */
 
 App.models.TestcaseModel = function () {
-    App.models.MainModel.call(this, 'testcase');
+    App.models.MainModel.call(this);
 };
 
 App.models.TestcaseModel.prototype = new App.models.MainModel();
@@ -2589,27 +1736,13 @@ App.models.TestcaseModel.prototype.getTestvectors = function (id) {
     return q.promise;
 };
 
-App.models.TestcaseModel.prototype.getDetails = function (id) {
-    var q = Q.defer();
-
-    App.utils.HTTPUtils.get(App.constants.requestParameter.testcase.GET + '/' + id + '/details')
-      .then(function (data) {
-          q.resolve(data);
-      })
-      .catch(function (error) {
-          q.reject(error);
-      });
-
-    return q.promise;
-};
-
 App.models.TestcaseModel.prototype.constructor = App.models.TestcaseModel;
 /**
  * Created by danielsilhavy on 02.08.16.
  */
 
 App.models.TestvectorModel = function () {
-    App.models.MainModel.call(this, 'testvector');
+    App.models.MainModel.call(this);
 };
 
 App.models.TestvectorModel.prototype = new App.models.MainModel();
@@ -2642,10 +1775,16 @@ App.models.TestvectorModel.prototype.getTestvectors = function (id) {
     return q.promise;
 };
 
-App.models.TestvectorModel.prototype.getDetails = function (id) {
+App.models.TestvectorModel.prototype.getPaginationElements = function (url, page, limit) {
     var q = Q.defer();
+    var token = this.loginModel.getToken();
 
-    App.utils.HTTPUtils.get(App.constants.requestParameter.testvector.GET + '/' + id + '/details')
+    page = page || 0;
+    limit = limit || App.constants.pagination.LIMIT;
+    url += '?&page=' + page + '&limit=' + limit;
+
+
+    App.utils.HTTPUtils.get(url, token)
       .then(function (data) {
           q.resolve(data);
       })
@@ -2655,13 +1794,14 @@ App.models.TestvectorModel.prototype.getDetails = function (id) {
 
     return q.promise;
 };
+
 App.models.TestvectorModel.prototype.constructor = App.models.TestvectorModel;
 /**
  * Created by danielsilhavy on 01.08.16.
  */
 
 App.models.UserModel = function () {
-    App.models.MainModel.call(this, 'user');
+    App.models.MainModel.call(this);
 };
 
 App.models.UserModel.prototype = new App.models.MainModel();
@@ -2694,7 +1834,7 @@ App.controller.MainController.prototype.onCreateElement = function (callee, data
     var self = this;
     // We need to add the createdby field
     data.createdby = self.loginModel.getLoginData()._id;
-    self.model.createElements(data)
+    self.model.createElements(App.constants.requestParameter[self.type].CREATE, data)
       .then(function () {
           self.view.clearView();
           App.views.MessageView.renderSuccessMessage({message: 'Created element'});
@@ -2709,7 +1849,7 @@ App.controller.MainController.prototype.onCreateElement = function (callee, data
 App.controller.MainController.prototype.onEditElement = function (callee, data) {
     var self = this;
 
-    self.model.editElement(data)
+    self.model.editElement(App.constants.requestParameter[self.type].EDIT, data)
       .then(function () {
           self.view.clearView();
           App.views.MessageView.renderSuccessMessage({message: 'Edited element'});
@@ -2724,7 +1864,7 @@ App.controller.MainController.prototype.onEditElement = function (callee, data) 
 App.controller.MainController.prototype.onDeleteElement = function (callee, id) {
     var self = this;
 
-    self.model.deleteElement(id)
+    self.model.deleteElement(App.constants.requestParameter[self.type].DELETE, id)
       .then(function () {
           self.view.clearView();
           App.views.MessageView.renderSuccessMessage({message: 'Deleted element'});
@@ -2759,10 +1899,6 @@ App.controller.MainController.prototype.handleRequest = function (route) {
         case 'mylist':
             this.actionMyList();
             break;
-        case 'details':
-            id = typeof route[2] !== 'undefined' ? route[2] : null;
-            this.actionDetail(id);
-            break;
         default:
             this.actionList();
     }
@@ -2773,10 +1909,9 @@ App.controller.MainController.prototype.actionList = function () {
     var self = this;
     var filterPreferences = self.loginModel.getFilterPreferences();
 
-    self.model.getElements()
+    self.model.getElements(App.constants.requestParameter[self.type].GET_MULTI)
       .then(function (data) {
           renderData.entries = data;
-          renderData.isAdmin = self.loginModel.isAdmin();
           self.view.renderList(renderData, filterPreferences);
       })
       .catch(function (error) {
@@ -2794,7 +1929,7 @@ App.controller.MainController.prototype.actionEdit = function (id) {
     if (!id) {
         App.handler.Errorhandler.handleError(new Error('Invalid ID specified'));
     } else {
-        self.model.getElementById(id)
+        self.model.getElementById(App.constants.requestParameter[self.type].GET, id)
           .then(function (data) {
               self.view.renderEdit(data);
           })
@@ -2809,109 +1944,14 @@ App.controller.MainController.prototype.actionMyList = function () {
     var self = this;
     var filterPreferences = self.loginModel.getFilterPreferences();
 
-    self.model.getMyElements()
+    self.model.getMyElements(App.constants.requestParameter[self.type].MYLIST)
       .then(function (data) {
           renderData.entries = data;
-          renderData.isAdmin = self.loginModel.isAdmin();
           self.view.renderMyList(renderData, filterPreferences);
       })
       .catch(function (error) {
           App.handler.Errorhandler.handleError(error);
       });
-};
-
-App.controller.MainController.prototype.filterInactiveTestcases = function (items) {
-    var result;
-
-    result = items.filter(function (tc) {
-        var valid = false;
-
-        if (!tc.active) {
-            return false;
-        }
-        if (tc.hasOwnProperty('feature')) {
-            if (tc.feature.active && tc.feature.hasOwnProperty('featureGroup') && tc.feature.featureGroup.active) {
-                valid = true;
-            }
-        } else {
-            valid = true;
-        }
-        return valid;
-    });
-    return result;
-};
-
-App.controller.MainController.prototype.filterInactiveFeatures = function (items) {
-    var result;
-
-    result = items.filter(function (feature) {
-          var valid = false;
-
-          if (!feature.active) {
-              return false;
-          }
-          if (feature.hasOwnProperty('featureGroup')) {
-              if (feature.featureGroup.active) {
-                  valid = true;
-              }
-          } else {
-              valid = true;
-          }
-          return valid;
-      }
-    );
-    return result;
-};
-
-App.controller.MainController.prototype.filterInactiveFeatureGroups = function (items) {
-    return items.filter(function (item) {
-        return item.active;
-    });
-};
-
-App.controller.MainController.prototype.filterInactiveTestvectors = function (items) {
-    var result;
-
-    result = items.filter(function (item) {
-        var valid = false;
-
-        if (!item.active) {
-            return false;
-        }
-        if (item.hasOwnProperty('testcases')) {
-            item.testcases.forEach(function (tc) {
-                if (tc.active) {
-                    if (tc.hasOwnProperty('feature') && tc.feature.active) {
-                        if (tc.feature.hasOwnProperty('featureGroup') && tc.feature.featureGroup.active) {
-                            valid = true;
-                        }
-                    }
-                }
-            });
-        } else {
-            valid = true;
-        }
-        return valid;
-    });
-    return result;
-};
-
-App.controller.MainController.prototype.filterData = function (items) {
-    var self = this;
-
-    if (items.hasOwnProperty('featureGroups')) {
-        items.featureGroups = self.filterInactiveFeatureGroups(items.featureGroups);
-    }
-    if (items.hasOwnProperty('features')) {
-        items.features = self.filterInactiveFeatures(items.features);
-    }
-    if (items.hasOwnProperty('testcases')) {
-        items.testcases = self.filterInactiveTestcases(items.testcases);
-    }
-    if (items.hasOwnProperty('testvectors')) {
-        items.testvectors = self.filterInactiveTestvectors(items.testvectors);
-    }
-    return items;
 };
 
 
@@ -2959,99 +1999,17 @@ App.controller.DefaultController.prototype.handleRequest = function (route) {
 App.controller.DefaultController.prototype.actionDefault = function () {
     var self = this;
     var data = {};
-    var promises = [];
 
-    promises.push(this.statisticModel.getTestvectorTypes());
-    promises.push(this.statisticModel.getTestcaseTypes());
-    promises.push(this.statisticModel.getFeatureTypes());
-    promises.push(this.statisticModel.getFeatureGroupTypes());
-    Q.all(promises)
+    this.statisticModel.getSize()
       .then(function (result) {
-          data.testvectorTypes = self.filterTestvectors(result[0]);
-          data.testcaseTypes = self.filterTestcases(result[1]);
-          data.featureTypes = self.filterFeatures(result[2]);
-          data.featureGroupTypes = result[3];
-          data.size = {
-              featureGroups: data.featureGroupTypes.length,
-              features: data.featureTypes.length,
-              testcases: data.testcaseTypes.length,
-              testvectors: data.testvectorTypes.length
-          };
-          // Filter the items which parent/parents are inactive
+          data.size = result;
           self.view.renderIndex(data);
-      })
-      .catch(function (err) {
-          App.handler.Errorhandler.handleError(err);
       });
 };
 
 App.controller.DefaultController.prototype.actionFAQ = function () {
-    this.view.renderFAQ();
+  this.view.renderFAQ();
 };
-
-App.controller.DefaultController.prototype.filterTestvectors = function (elems) {
-    var result;
-
-    result = elems.filter(function (item) {
-        var valid = false;
-
-        if (item.hasOwnProperty('testcases')) {
-            item.testcases.forEach(function (tc) {
-                if (tc.active) {
-                    if (tc.hasOwnProperty('feature') && tc.feature.active) {
-                        if (tc.feature.hasOwnProperty('featureGroup') && tc.feature.featureGroup.active) {
-                            valid = true;
-                        }
-                    }
-                }
-            });
-        } else {
-            valid = true;
-        }
-        return valid;
-    });
-    return result;
-};
-
-App.controller.DefaultController.prototype.filterTestcases = function (elems) {
-    var result;
-
-    result = elems.filter(function (tc) {
-        var valid = false;
-
-        if (tc.hasOwnProperty('feature')) {
-            if (tc.feature.active && tc.feature.hasOwnProperty('featureGroup') && tc.feature.featureGroup.active) {
-                valid = true;
-            }
-        } else {
-            valid = true;
-        }
-        return valid;
-    });
-    return result;
-};
-
-App.controller.DefaultController.prototype.filterFeatures = function (elems) {
-    var result;
-
-    result = elems.filter(function (feature) {
-          var valid = false;
-
-          if (feature.hasOwnProperty('featureGroup')) {
-              if (feature.featureGroup.active) {
-                  valid = true;
-              }
-          } else {
-              valid = true;
-          }
-          return valid;
-      }
-    );
-    return result;
-};
-
-
-
 /**
  * Created by danielsilhavy on 02.08.16.
  */
@@ -3072,7 +2030,7 @@ App.controller.FeatureController.prototype.actionCreate = function () {
     var promises = [];
 
     promises.push(self.model.getAttributes());
-    promises.push(self.featureGroupModel.getElements());
+    promises.push(self.featureGroupModel.getElements(App.constants.requestParameter[self.type].GET_MULTI));
 
     Q.all(promises)
       .then(function (result) {
@@ -3089,12 +2047,8 @@ App.controller.FeatureController.prototype.actionList = function () {
     var renderData = {};
     var filterPreferences = self.loginModel.getFilterPreferences();
 
-    self.model.getElements()
+    self.model.getElements(App.constants.requestParameter[self.type].GET_MULTI)
       .then(function (data) {
-          renderData.isAdmin = self.loginModel.isAdmin();
-          if(!renderData.isAdmin) {
-              data = self.filterInactiveFeatures(data);
-          }
           renderData.entries = data;
           return self.model.getAttributes();
       })
@@ -3112,10 +2066,9 @@ App.controller.FeatureController.prototype.actionMyList = function () {
     var renderData = {};
     var filterPreferences = self.loginModel.getFilterPreferences();
 
-    self.model.getMyElements()
+    self.model.getMyElements(App.constants.requestParameter[self.type].MYLIST)
       .then(function (data) {
           renderData.entries = data;
-          renderData.isAdmin = self.loginModel.isAdmin();
           return self.model.getAttributes();
       })
       .then(function (data) {
@@ -3126,20 +2079,6 @@ App.controller.FeatureController.prototype.actionMyList = function () {
           App.handler.Errorhandler.handleError(error);
       });
 };
-
-App.controller.FeatureController.prototype.actionDetail = function (id) {
-    var self = this;
-
-    self.model.getDetails(id)
-      .then(function (data) {
-          data = self.filterData(data);
-          self.view.renderDetails(data);
-      })
-      .catch(function (error) {
-          App.handler.Errorhandler.handleError(error);
-      });
-};
-
 App.controller.FeatureController.prototype.onDeleteElement = function (callee, id) {
     var self = this;
 
@@ -3149,7 +2088,7 @@ App.controller.FeatureController.prototype.onDeleteElement = function (callee, i
           if (items.length > 0) {
               throw new Error('Can not delete element since it is referenced in one or more Testcases');
           } else {
-              return self.model.deleteElement(id);
+              return self.model.deleteElement(App.constants.requestParameter[self.type].DELETE, id);
           }
       })
       .then(function () {
@@ -3171,8 +2110,8 @@ App.controller.FeatureController.prototype.actionEdit = function (id) {
         App.handler.Errorhandler.handleError(new Error('Invalid ID specified'));
         self.actionList();
     } else {
-        promises.push(self.model.getElementById(id));
-        promises.push(self.featureGroupModel.getElements());
+        promises.push(self.model.getElementById(App.constants.requestParameter.feature.GET,id));
+        promises.push(self.featureGroupModel.getElements(App.constants.requestParameter[self.type].GET_MULTI));
         Q.all(promises)
           .then(function (result) {
               self.view.renderEdit({element: result[0], featureGroups: result[1], });
@@ -3182,6 +2121,7 @@ App.controller.FeatureController.prototype.actionEdit = function (id) {
           });
     }
 };
+
 
 App.controller.FeatureController.prototype.constructor = App.controller.FeatureController;
 
@@ -3214,18 +2154,14 @@ App.controller.FeatureGroupController.prototype.actionList = function () {
     var renderData = {};
     var filterPreferences = self.loginModel.getFilterPreferences();
 
-    self.model.getElements()
+    self.model.getElements(App.constants.requestParameter[self.type].GET_MULTI)
       .then(function (data) {
-          renderData.isAdmin = self.loginModel.isAdmin();
-          if(!renderData.isAdmin) {
-              data = self.filterInactiveFeatureGroups(data);
-          }
           renderData.entries = data;
           return self.model.getAttributes();
       })
       .then(function (data) {
           renderData.attributes = data;
-          self.view.renderList(renderData, filterPreferences);
+          self.view.renderList(renderData,filterPreferences);
       })
       .catch(function (error) {
           App.handler.Errorhandler.handleError(error);
@@ -3237,10 +2173,9 @@ App.controller.FeatureGroupController.prototype.actionMyList = function () {
     var renderData = {};
     var filterPreferences = self.loginModel.getFilterPreferences();
 
-    self.model.getMyElements()
+    self.model.getMyElements(App.constants.requestParameter[self.type].MYLIST)
       .then(function (data) {
           renderData.entries = data;
-          renderData.isAdmin = self.loginModel.isAdmin();
           return self.model.getAttributes();
       })
       .then(function (data) {
@@ -3251,20 +2186,6 @@ App.controller.FeatureGroupController.prototype.actionMyList = function () {
           App.handler.Errorhandler.handleError(error);
       });
 };
-
-App.controller.FeatureGroupController.prototype.actionDetail = function (id) {
-    var self = this;
-
-    self.model.getDetails(id)
-      .then(function (data) {
-          data = self.filterData(data);
-          self.view.renderDetails(data);
-      })
-      .catch(function (error) {
-          App.handler.Errorhandler.handleError(error);
-      });
-};
-
 App.controller.FeatureGroupController.prototype.onDeleteElement = function (callee, id) {
     var self = this;
 
@@ -3274,7 +2195,7 @@ App.controller.FeatureGroupController.prototype.onDeleteElement = function (call
           if (items.length > 0) {
               throw new Error('Can not delete element since it is referenced in one or more features');
           } else {
-              return self.model.deleteElement(id);
+              return self.model.deleteElement(App.constants.requestParameter[self.type].DELETE, id);
           }
       })
       .then(function () {
@@ -3287,6 +2208,7 @@ App.controller.FeatureGroupController.prototype.onDeleteElement = function (call
           self.actionMyList();
       });
 };
+
 
 App.controller.FeatureGroupController.prototype.constructor = App.controller.FeatureController;
 /**
@@ -3368,7 +2290,7 @@ App.controller.TestcaseController.prototype.actionCreate = function () {
     var promises = [];
 
     promises.push(self.model.getAttributes());
-    promises.push(self.featureModel.getElements());
+    promises.push(self.featureModel.getElements(App.constants.requestParameter.feature.GET_MULTI));
 
     Q.all(promises)
       .then(function (result) {
@@ -3385,12 +2307,8 @@ App.controller.TestcaseController.prototype.actionList = function () {
     var renderData = {};
     var filterPreferences = self.loginModel.getFilterPreferences();
 
-    self.model.getElements()
+    self.model.getElements(App.constants.requestParameter[self.type].GET_MULTI)
       .then(function (data) {
-          renderData.isAdmin = self.loginModel.isAdmin();
-          if(!renderData.isAdmin) {
-              data = self.filterInactiveTestcases(data);
-          }
           renderData.entries = data;
           return self.model.getAttributes();
       })
@@ -3411,8 +2329,8 @@ App.controller.TestcaseController.prototype.actionEdit = function (id) {
         App.handler.Errorhandler.handleError(new Error('Invalid ID specified'));
         self.actionList();
     } else {
-        promises.push(self.model.getElementById(id));
-        promises.push(self.featureModel.getElements());
+        promises.push(self.model.getElementById(App.constants.requestParameter[self.type].GET, id));
+        promises.push(self.featureModel.getElements(App.constants.requestParameter.feature.GET_MULTI));
         Q.all(promises)
           .then(function (result) {
               self.view.renderEdit({element: result[0], features: result[1],});
@@ -3428,10 +2346,9 @@ App.controller.TestcaseController.prototype.actionMyList = function () {
     var renderData = {};
     var filterPreferences = self.loginModel.getFilterPreferences();
 
-    self.model.getMyElements()
+    self.model.getMyElements(App.constants.requestParameter[self.type].MYLIST)
       .then(function (data) {
           renderData.entries = data;
-          renderData.isAdmin = self.loginModel.isAdmin();
           return self.model.getAttributes();
       })
       .then(function (data) {
@@ -3442,20 +2359,6 @@ App.controller.TestcaseController.prototype.actionMyList = function () {
           App.handler.Errorhandler.handleError(error);
       });
 };
-
-App.controller.TestcaseController.prototype.actionDetail = function (id) {
-    var self = this;
-
-    self.model.getDetails(id)
-      .then(function (data) {
-          data = self.filterData(data);
-          self.view.renderDetails(data);
-      })
-      .catch(function (error) {
-          App.handler.Errorhandler.handleError(error);
-      });
-};
-
 App.controller.TestcaseController.prototype.onDeleteElement = function (callee, id) {
     var self = this;
 
@@ -3465,7 +2368,7 @@ App.controller.TestcaseController.prototype.onDeleteElement = function (callee, 
           if (items.length > 0) {
               throw new Error('Can not delete element since it is referenced in one or more Testvectors');
           } else {
-              return self.model.deleteElement(id);
+              return self.model.deleteElement(App.constants.requestParameter[self.type].DELETE, id);
           }
       })
       .then(function () {
@@ -3478,6 +2381,7 @@ App.controller.TestcaseController.prototype.onDeleteElement = function (callee, 
           self.actionMyList();
       });
 };
+
 
 App.controller.TestcaseController.prototype.constructor = App.controller.TestcaseController;
 
@@ -3500,7 +2404,7 @@ App.controller.TestvectorController.prototype.actionCreate = function () {
     var promises = [];
 
     promises.push(self.model.getAttributes());
-    promises.push(self.testcaseModel.getElements());
+    promises.push(self.testcaseModel.getElements(App.constants.requestParameter.testcase.GET_MULTI));
 
     Q.all(promises)
       .then(function (result) {
@@ -3517,44 +2421,14 @@ App.controller.TestvectorController.prototype.actionList = function () {
     var renderData = {};
     var filterPreferences = self.loginModel.getFilterPreferences();
 
-    self.model.getAttributes()
-      .then(function (data) {
-          renderData.attributes = data;
-          renderData.isAdmin = self.loginModel.isAdmin();
-          self.view.renderList(renderData, filterPreferences);
-      })
-      .catch(function (error) {
-          App.handler.Errorhandler.handleError(error);
-      });
-};
-
-App.controller.TestvectorController.prototype.actionMyList = function () {
-    var self = this;
-    var renderData = {};
-    var filterPreferences = self.loginModel.getFilterPreferences();
-
-    self.model.getMyElements()
+    self.model.getElements(App.constants.requestParameter[self.type].GET_MULTI)
       .then(function (data) {
           renderData.entries = data;
           return self.model.getAttributes();
       })
       .then(function (data) {
           renderData.attributes = data;
-          renderData.isAdmin = self.loginModel.isAdmin();
-          self.view.renderMyList(renderData, filterPreferences);
-      })
-      .catch(function (error) {
-          App.handler.Errorhandler.handleError(error);
-      });
-};
-
-App.controller.TestvectorController.prototype.actionDetail = function (id) {
-    var self = this;
-
-    self.model.getDetails(id)
-      .then(function (data) {
-          data = self.filterData(data);
-          self.view.renderDetails(data);
+          self.view.renderList(renderData, filterPreferences);
       })
       .catch(function (error) {
           App.handler.Errorhandler.handleError(error);
@@ -3569,8 +2443,8 @@ App.controller.TestvectorController.prototype.actionEdit = function (id) {
         App.handler.Errorhandler.handleError(new Error('Invalid ID specified'));
         self.actionList();
     } else {
-        promises.push(self.model.getElementById(id));
-        promises.push(self.testcaseModel.getElements());
+        promises.push(self.model.getElementById(App.constants.requestParameter[self.type].GET, id));
+        promises.push(self.testcaseModel.getElements(App.constants.requestParameter.testcase.GET_MULTI));
         Q.all(promises)
           .then(function (result) {
               self.view.renderEdit({element: result[0], testcases: result[1],});
@@ -3581,16 +2455,37 @@ App.controller.TestvectorController.prototype.actionEdit = function (id) {
     }
 };
 
+App.controller.TestvectorController.prototype.actionMyList = function () {
+    var self = this;
+    var renderData = {};
+    var filterPreferences = self.loginModel.getFilterPreferences();
+
+    self.model.getMyElements(App.constants.requestParameter[self.type].MYLIST)
+      .then(function (data) {
+          renderData.entries = data;
+          return self.model.getAttributes();
+      })
+      .then(function (data) {
+          renderData.attributes = data;
+          self.view.renderMyList(renderData, filterPreferences);
+      })
+      .catch(function (error) {
+          App.handler.Errorhandler.handleError(error);
+      });
+};
+
 App.controller.TestvectorController.prototype.actionGroupedList = function () {
     var self = this;
     var renderData = {};
     var filterPreferences = self.loginModel.getFilterPreferences();
 
-
-    self.model.getAttributes()
+    self.model.getElements(App.constants.requestParameter[self.type].GET_MULTI_PAGINATION)
+      .then(function (data) {
+          renderData.entries = data;
+          return self.model.getAttributes();
+      })
       .then(function (data) {
           renderData.attributes = data;
-          renderData.isAdmin = self.loginModel.isAdmin();
           self.view.renderGroupedList(renderData, filterPreferences);
       })
       .catch(function (error) {
@@ -3602,7 +2497,7 @@ App.controller.TestvectorController.prototype.onDeleteElement = function (callee
     var self = this;
 
     //check if there is a feature with that featureGroup
-    self.model.deleteElement(id)
+    self.model.deleteElement(App.constants.requestParameter[self.type].DELETE, id)
       .then(function () {
           self.view.clearView();
           App.views.MessageView.renderSuccessMessage({message: 'Deleted Testvector'});
@@ -3634,7 +2529,7 @@ App.controller.UserController.prototype = new App.controller.MainController();
 App.controller.UserController.prototype.onEditElement = function (callee, data) {
     var self = this;
 
-    self.model.editElement(data)
+    self.model.editElement(App.constants.requestParameter[self.type].EDIT, data)
       .then(function () {
           self.view.clearView();
           return App.views.MessageView.renderSuccessMessage({message: 'Edited element'});
@@ -3650,7 +2545,7 @@ App.controller.UserController.prototype.onEditElement = function (callee, data) 
 App.controller.UserController.prototype.onDeleteElement = function (callee,id) {
     var self = this;
 
-    self.model.deleteElement(id)
+    self.model.deleteElement(App.constants.requestParameter[self.type].DELETE,id)
       .then(function () {
           self.view.clearView();
           return App.views.MessageView.renderSuccessMessage({message: 'Deleted User'});
@@ -3719,7 +2614,7 @@ App.Router.prototype.route = function (url) {
     var disclaimer;
     var loginData = self.loginModel.getLoginData();
 
-    disclaimer = self.loginModel.getDisclaimer(loginData);
+    disclaimer = self.loginModel.getDisclaimer();
     self.helperView.toggleMenuState(loginData);
     self.helperView.setActiveItem(route);
 
@@ -3758,6 +2653,7 @@ App.Router.prototype.route = function (url) {
 
         }
     }
+    self.helperView.setContentHeight();
 };
 
 

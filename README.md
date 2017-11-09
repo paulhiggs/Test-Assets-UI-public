@@ -1,23 +1,19 @@
 # Test-Assets-UI
 
-
-![](http://dashif.org/wp-content/uploads/2014/12/dashif-logo-283x100.jpg)
-
 ## Introduction
 
-The DASH-IF Testvector database is a tool to allow a dynamic management of the testvectors provided by the DASH Industry Forum. This includes:
+The VR-IF Testvector database is a tool to allow a dynamic management of the testvectors provided by the VR Industry Forum. This includes:
 
-- Categorized DASH-IF features and feature groups
-- Test cases for the individual features.
-- Test vectors for the test cases.
-- Dynamic management of the attributes all the models
+- Testcontent: the source VR contents.
+- Testvectors generated from Testcontents.
+- Dynamic management of the attributes of all the models
 
-A live demo of the tool can be found [here](http://testassets.dashif.org/) . This repository provides the client-side functionality of the tool.
-It is supposed to run alongside the [Test-Assets-Dataset](https://github.com/Dash-Industry-Forum/Test-Assets-Dataset-Public).
+This repository provides the client-side functionality of the tool.
+It is supposed to run alongside the [Test-Assets-Dataset](https://github.com/VR-IF/Test-Assets-Dataset-Public).
 
 ## Installing / Getting started
 
-The Test-Assets-UI relies on the [Test-Assets-Dataset](https://github.com/Dash-Industry-Forum/Test-Assets-Dataset-Public) for full functionality. In order to install the UI please follow the instructions below:
+The Test-Assets-UI relies on the [Test-Assets-Dataset](https://github.com/VR-IF/Test-Assets-Dataset-Public) for full functionality. In order to install the UI please follow the instructions below:
 
 ### Prerequisites
 This project requires node.js and the node package manager (npm) to be installed.
@@ -25,8 +21,8 @@ This project requires node.js and the node package manager (npm) to be installed
 ### Setup
 
 ```shell
-git clone https://github.com/Dash-Industry-Forum/Test-Assets-UI-Public 
-cd Test-Assets-UI
+git clone https://github.com/VR-IF/Test-Assets-UI-public
+cd Test-Assets-UI-public
 npm install
 npm start
 ```
