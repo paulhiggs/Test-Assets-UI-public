@@ -4,8 +4,9 @@
 
 
 App.models.AttributeModel = function () {
-  App.models.MainModel.call(this, 'attribute');
+    App.models.MainModel.call(this, 'attribute');
 };
+
 
 
 App.models.AttributeModel.prototype = new App.models.MainModel();

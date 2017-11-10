@@ -3,10 +3,10 @@
  */
 
 App.controller.AttributeController = function () {
-  var model = new App.models.AttributeModel();
-  var view = new App.views.AttributeView();
-  App.controller.MainController.call(this, model, view, 'attribute');
-  this.registerEvents();
+    var model = new App.models.AttributeModel();
+    var view = new App.views.AttributeView();
+    App.controller.MainController.call(this, model, view, 'attribute');
+    this.registerEvents();
 };
 
 App.controller.AttributeController.prototype = new App.controller.MainController();

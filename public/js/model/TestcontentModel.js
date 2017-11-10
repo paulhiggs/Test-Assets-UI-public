@@ -2,16 +2,16 @@
  * Created by danielsilhavy on 02.08.16.
  */
 
-App.models.TestvectorModel = function () {
-    App.models.MainModel.call(this, 'testvector');
+App.models.TestcontentModel = function () {
+    App.models.MainModel.call(this, 'testcontent');
 };
 
-App.models.TestvectorModel.prototype = new App.models.MainModel();
+App.models.TestcontentModel.prototype = new App.models.MainModel();
 
-App.models.TestvectorModel.prototype.getAttributes = function () {
+App.models.TestcontentModel.prototype.getAttributes = function () {
     var q = Q.defer();
 
-    App.utils.HTTPUtils.get(App.constants.requestParameter.attribute.GET_MULTI + '?type=' + App.constants.types.TESTVECTOR)
+    App.utils.HTTPUtils.get(App.constants.requestParameter.attribute.GET_MULTI + '?type=' + App.constants.types.TESTCONTENT)
       .then(function (data) {
           q.resolve(data);
       })
@@ -22,7 +22,7 @@ App.models.TestvectorModel.prototype.getAttributes = function () {
     return q.promise;
 };
 
-App.models.TestvectorModel.prototype.getTestvectors = function (id) {
+App.models.TestcontentModel.prototype.getTestvectors = function (id) {
     var q = Q.defer();
 
     App.utils.HTTPUtils.get(App.constants.requestParameter.testcontent.GET + '/' + id + '/testvectors')
@@ -36,10 +36,10 @@ App.models.TestvectorModel.prototype.getTestvectors = function (id) {
     return q.promise;
 };
 
-App.models.TestvectorModel.prototype.getDetails = function (id) {
+App.models.TestcontentModel.prototype.getDetails = function (id) {
     var q = Q.defer();
 
-    App.utils.HTTPUtils.get(App.constants.requestParameter.testvector.GET + '/' + id + '/details')
+    App.utils.HTTPUtils.get(App.constants.requestParameter.testcontent.GET + '/' + id + '/details')
       .then(function (data) {
           q.resolve(data);
       })
@@ -49,4 +49,5 @@ App.models.TestvectorModel.prototype.getDetails = function (id) {
 
     return q.promise;
 };
-App.models.TestvectorModel.prototype.constructor = App.models.TestvectorModel;
+
+App.models.TestcontentModel.prototype.constructor = App.models.TestcontentModel;
