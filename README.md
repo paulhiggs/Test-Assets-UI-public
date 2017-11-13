@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The VR-IF Testvector database is a tool to allow a dynamic management of the testvectors provided by the VR Industry Forum. This includes:
+The VR-IF Testvector database is a tool to allow a dynamic management of the testvectors provided by the VR Industry Forum. This is a fork of the DASH-IF Testvector database. This framework includes:
 
 - Testcontent: the source VR contents.
 - Testvectors generated from Testcontents.
@@ -32,7 +32,7 @@ npm start
 Configuration files can be found in `\config`. In order to set the port for the http server which hosting this interface please adjust the `server.port`parameter.
 Moreover, for communication with the Test-Assets-Dataset the url to the backend server needs to be set. This can be done by adjusting the `BASE_URL` in `public\js\constants\Constants.js`.
 
-### Bulding
+### Building
 This project contains a small Grunt script for minification. By running `grunt` in the root folder of this project the minified files are created and copied to the `dist`folder. 
 
 ### Starting
