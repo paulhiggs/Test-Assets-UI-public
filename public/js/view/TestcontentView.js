@@ -26,7 +26,8 @@ App.views.TestcontentView.prototype.getFieldValues = function () {
 
     values.name = $('#name').val();
     values.active = $('input[name=active]:checked').val();
-    values.includeInDashjsJson = $('input[name=json]:checked').val();
+//    values.includeInDashjsJson = $('input[name=json]:checked').val();
+    values.includeInDashjsJson = false;
     values.attributeInstances = [];
     $('.dynamic-attribute').each(function (i, obj) {
         values.attributeInstances.push({
@@ -44,7 +45,8 @@ App.views.TestcontentView.prototype.getEditFieldValues = function () {
 
     values.name = $('#name').val();
     values.active = $('input[name=active]:checked').val();
-    values.includeInDashjsJson = $('input[name=json]:checked').val();
+    values.includeInDashjsJson = false;
+//    values.includeInDashjsJson = $('input[name=json]:checked').val();
     values.attributeInstances = [];
     $('.dynamic-attribute').each(function (i, obj) {
         values.attributeInstances.push({

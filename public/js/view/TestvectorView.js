@@ -173,7 +173,8 @@ App.views.TestvectorView.prototype.getFieldValues = function () {
 
     values.name = $('#name').val();
     values.active = $('input[name=active]:checked').val();
-    values.includeInDashjsJson = $('input[name=json]:checked').val();
+    values.includeInDashjsJson = false;
+//    values.includeInDashjsJson = $('input[name=json]:checked').val();
     values.url = $('#url').val();
     values.attributeInstances = [];
     $('.dynamic-attribute').each(function (i, obj) {
@@ -194,7 +195,8 @@ App.views.TestvectorView.prototype.getEditFieldValues = function () {
     var self = this;
 
     values.name = $('#name').val();
-    values.active = $('input[name=active]:checked').val();
+    values.active = false;
+//    values.active = $('input[name=active]:checked').val();
     values.includeInDashjsJson = $('input[name=json]:checked').val();
     values.url = $('#url').val();
     values.attributeInstances = [];
