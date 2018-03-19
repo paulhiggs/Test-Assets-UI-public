@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The VR-IF Testvector database is a tool to allow a dynamic management of the testvectors provided by the VR Industry Forum. This is a fork of the DASH-IF Testvector database. This framework includes:
+The VRIF Testvector database is a tool to allow a dynamic management of the testvectors provided by the VR Industry Forum. This is a fork of the DASH-IF Testvector database. This framework includes:
 
 - Testcontent: the source VR contents.
 - Testvectors generated from Testcontents.

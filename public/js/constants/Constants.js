@@ -1,7 +1,8 @@
 /**
  * Created by danielsilhavy on 01.08.16.
  */
-var BASE_URL = 'http://13.57.117.104:3000/v1/';
+var BASE_URL = 'http://testassets.vr-if.org:3000/v1/';
+//var BASE_URL = 'http://13.57.117.104:3000/v1/';
 //var BASE_URL = 'http://testassets.dashif.org:3000/v1/';
 
 App.constants.requestParameter = {
